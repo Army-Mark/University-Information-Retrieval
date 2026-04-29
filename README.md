@@ -403,6 +403,10 @@ c.Error(errors.InternalServerError("服务器错误", err))
 2. **静态文件服务**：Logo和静态文件通过Gin的静态文件服务提供
 3. **模板加载**：模板文件路径相对于运行目录，需要确保 `templates/` 目录存在
 
+## 写在最后
+项目一开始是用- Flask+SQLite实现的，docker部署到服务器后发现资源消耗有点高，所以用Go重写了一个，两个项目都是AI对话式写的，将就用。
+
+
 ## 许可证
 
 MIT License
