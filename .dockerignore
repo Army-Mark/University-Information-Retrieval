@@ -1,0 +1,35 @@
+# 编译产物
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 依赖目录
+vendor/
+
+# 临时文件
+*.tmp
+*.temp
+
+# 日志文件
+*.log
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# 构建文件
+build/
+dist/
+
+# 环境文件（保留.env.example）
+.env
+
+# 数据库文件（如果需要在镜像中包含，则不排除）
+# school.db

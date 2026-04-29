@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>账户管理 - 高校信息查询系统</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 50px;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .account-list {
+            margin-bottom: 30px;
+        }
+        
+        .account-item {
+            background-color: #f8f9fa;
+            padding: 20px 25px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .account-item:hover {
+            background-color: #f0f1f2;
+        }
+        
+        .account-info {
+            flex: 1;
+        }
+        
+        .account-username {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .account-password {
+            font-size: 14px;
+            color: #888;
+        }
+        
+        .account-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none !important;
+        }
+        
+        .btn-edit:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-add {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 35px;
+            font-size: 15px;
+        }
+        
+        .btn-add:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-back {
+            background-color: #95a5a6;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .btn-back:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .add-section {
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .form-row .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background-color: white;
+            box-sizing: border-box;
+            height: auto;
+            line-height: 1.5;
+            min-height: 44px;
+            cursor: pointer;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+        
+        .form-row .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        /* 滚动数据区域 */
+        .scrolling-container {
+            height: 200px; /* 只显示两行账户 */
+            overflow: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        /* 编辑弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .edit-modal {
+            background-color: white;
+            padding: 35px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .modal-btn-secondary {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+        
+        .modal-btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        /* 删除确认弹窗样式 */
+        .delete-modal {
+            background-color: white;
+            padding: 40px 50px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .delete-modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .delete-modal-message {
+            font-size: 15px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .delete-modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        
+        .delete-btn {
+            padding: 12px 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .delete-btn-cancel {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+        
+        .delete-btn-cancel:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .delete-btn-confirm {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .delete-btn-confirm:hover {
+            background-color: #c0392b;
+        }
+        
+        /* 响应式设计 - 平板 */
+        @media (max-width: 1024px) {
+            .card {
+                padding: 30px 35px;
+            }
+        }
+        
+        /* 响应式设计 - 手机 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin-bottom: 25px;
+            }
+            
+            .add-section {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .account-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .account-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .edit-modal, .delete-modal {
+                padding: 30px 25px;
+                margin: 20px;
+            }
+            
+            .modal-title, .delete-modal-title {
+                font-size: 18px;
+            }
+            
+            .modal-actions, .delete-modal-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .modal-btn, .delete-btn {
+                width: 100%;
+            }
+        }
+        
+        /* 响应式设计 - 小屏手机 */
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            .account-username {
+                font-size: 15px;
+            }
+            
+            .account-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-edit, .btn-delete {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>管理后台</h1>
+        
+        <div class="add-section">
+            <div class="section-title">添加新账户</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="newUsername" placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="newPassword" placeholder="请输入密码">
+                </div>
+                <div class="form-group">
+                    <label>角色</label>
+                    <select id="newRole">
+                        <option value="user">普通用户</option>
+                        <option value="admin">管理员</option>
+                    </select>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn btn-add" onclick="addAccount()">添加账户</button>
+            </div>
+            <div class="error-message" id="addErrorMessage"></div>
+            <div class="success-message" id="addSuccessMessage"></div>
+        </div>
+        
+        <div class="section-title">账户列表</div>
+        <div class="scrolling-container">
+            <div class="account-list" id="accountList">
+                <!-- 账户列表将通过JavaScript动态加载 -->
+            </div>
+        </div>
+        
+        <div class="actions" style="display: flex; gap: 20px; margin-top: 30px;">
+            <a href="/" class="btn btn-back" style="flex: 1; text-align: center;">返回首页</a>
+            <a href="/operation_logs" class="btn btn-edit" style="flex: 1; text-align: center;">操作日志</a>
+        </div>
+    </div>
+    
+    <!-- 编辑账户弹窗 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="edit-modal">
+            <div class="modal-title">编辑账户</div>
+            <div class="form-group">
+                <label>原用户名</label>
+                <input type="text" id="oldUsername" disabled style="background-color: #f0f0f0;">
+            </div>
+            <div class="form-group" id="editUsernameGroup">
+                <label>新用户名</label>
+                <input type="text" id="editUsername" placeholder="请输入新用户名">
+            </div>
+            <div class="form-group">
+                <label>新密码</label>
+                <input type="password" id="editPassword" placeholder="请输入新密码">
+            </div>
+            <div class="form-group">
+                <label>确认新密码</label>
+                <input type="password" id="editConfirmPassword" placeholder="请确认新密码">
+            </div>
+            <div class="form-group" id="editRoleGroup">
+                <label>角色</label>
+                <select id="editRole">
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                </select>
+            </div>
+            <div class="error-message" id="editErrorMessage"></div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-secondary" onclick="hideEditModal()">取消</button>
+                <button class="modal-btn modal-btn-primary" onclick="saveEdit()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 删除确认弹窗 -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="delete-modal">
+            <div class="delete-modal-title">确认删除</div>
+            <div class="delete-modal-message" id="deleteModalMessage">确定要删除该账户吗？此操作不可恢复。</div>
+            <div class="delete-modal-actions">
+                <button class="delete-btn delete-btn-cancel" onclick="hideDeleteModal()">取消</button>
+                <button class="delete-btn delete-btn-confirm" onclick="confirmDelete()">确定删除</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let accounts = [];
+        let currentEditUsername = '';
+        let currentDeleteUsername = '';
+        let currentUserRole = '';
+        
+        // 获取当前用户角色
+        async function getCurrentUserRole() {
+            try {
+                const response = await fetch('/check_login');
+                const data = await response.json();
+                if (data.logged_in) {
+                    currentUserRole = data.role || '';
+                    updateUIBasedOnRole();
+                }
+            } catch (error) {
+                console.error('获取用户角色错误:', error);
+            }
+        }
+
+        // 根据角色更新UI
+        function updateUIBasedOnRole() {
+            // 如果不是管理员，隐藏添加账户表单
+            if (currentUserRole !== 'admin') {
+                const addSection = document.querySelector('.add-section');
+                if (addSection) {
+                    addSection.style.display = 'none';
+                }
+            }
+        }
+
+        // 页面加载时获取账户列表和用户角色
+        async function loadAccounts() {
+            try {
+                const response = await fetch('/get_accounts');
+                const data = await response.json();
+                if (data.success) {
+                    accounts = data.accounts;
+                    await renderAccounts();
+                }
+            } catch (error) {
+                console.error('加载账户列表错误:', error);
+            }
+        }
+        
+        // 渲染账户列表
+        async function renderAccounts() {
+            const accountList = document.getElementById('accountList');
+            
+            // 获取当前登录用户的用户名
+            let currentUsername = '';
+            try {
+                const response = await fetch('/check_login', { method: 'GET' });
+                const data = await response.json();
+                if (data.logged_in) {
+                    currentUsername = data.username;
+                }
+            } catch (error) {
+                console.error('获取当前用户名错误:', error);
+            }
+            
+            if (accounts.length === 0) {
+                accountList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无账户</div>';
+                return;
+            }
+            
+            // 对于普通用户，只显示自己的账户
+            let filteredAccounts = accounts;
+            if (currentUserRole !== 'admin') {
+                // 尝试获取当前用户名
+                filteredAccounts = accounts.filter(account => account.username === currentUsername);
+                
+                // 如果没有找到当前用户，显示所有账户（作为备份）
+                if (filteredAccounts.length === 0) {
+                    filteredAccounts = accounts;
+                }
+            }
+            
+            accountList.innerHTML = filteredAccounts.map(account => {
+                let actionsHTML = '';
+                
+                // 管理员可以看到所有账户的编辑和删除按钮
+                // 普通用户只能看到自己账户的编辑按钮，且不能修改角色
+                if (currentUserRole === 'admin' || account.username === currentUsername) {
+                    actionsHTML = '<div class="account-actions">' +
+                        '<button class="btn btn-edit" onclick="showEditModal(\'' + account.username + '\')">编辑</button>';
+                    
+                    // 只有管理员可以删除账户
+                    if (currentUserRole === 'admin') {
+                        actionsHTML += '<button class="btn btn-delete" onclick="deleteAccount(\'' + account.username + '\')">删除</button>';
+                    }
+                    
+                    actionsHTML += '</div>';
+                }
+                
+                return '<div class="account-item">' +
+                    '<div class="account-info">' +
+                        '<div class="account-username">' + account.username + '</div>' +
+                        '<div class="account-password">密码: ' + '*'.repeat(account.password.length) + '</div>' +
+                    '</div>' +
+                    actionsHTML +
+                '</div>';
+            }).join('');
+        }
+        
+        // 添加账户
+        async function addAccount() {
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const role = document.getElementById('newRole').value;
+            const errorMessage = document.getElementById('addErrorMessage');
+            const successMessage = document.getElementById('addSuccessMessage');
+            
+            if (!username || !password) {
+                errorMessage.textContent = '请输入用户名和密码';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/add_account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    successMessage.textContent = '添加成功';
+                    successMessage.style.display = 'block';
+                    errorMessage.style.display = 'none';
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newPassword').value = '';
+                    await loadAccounts();
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 2000);
+                } else {
+                    errorMessage.textContent = data.message;
+                    errorMessage.style.display = 'block';
+                    successMessage.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('添加账户错误:', error);
+                errorMessage.textContent = '添加失败，请重试';
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+        }
+        
+        // 显示编辑弹窗
+        async function showEditModal(username) {
+            currentEditUsername = username;
+            document.getElementById('oldUsername').value = username;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editConfirmPassword').value = '';
+            
+            // 设置角色选择框的初始值
+            const account = accounts.find(acc => acc.username === username);
+            if (account) {
+                document.getElementById('editRole').value = account.role;
+            } else {
+                document.getElementById('editRole').value = 'user';
+            }
+            
+            // 获取当前用户角色
+            let currentUserRole = '';
+            try {
+                const response = await fetch('/check_login');
+                const data = await response.json();
+                if (data.logged_in) {
+                    currentUserRole = data.role || '';
+                }
+            } catch (error) {
+                console.error('获取用户角色错误:', error);
+            }
+            
+            // 对于普通用户，隐藏新用户名和角色选择框，只显示密码相关字段
+            if (currentUserRole !== 'admin') {
+                // 普通用户隐藏新用户名和角色选择框
+                document.getElementById('editUsernameGroup').style.display = 'none';
+                document.getElementById('editRoleGroup').style.display = 'none';
+            } else {
+                // 管理员显示所有字段
+                document.getElementById('editUsernameGroup').style.display = 'block';
+                document.getElementById('editRoleGroup').style.display = 'block';
+                // 管理员可以修改用户名
+                document.getElementById('editUsername').disabled = false;
+                document.getElementById('editUsername').style.backgroundColor = 'white';
+            }
+            
+            document.getElementById('editErrorMessage').style.display = 'none';
+            document.getElementById('editModal').classList.add('show');
+            document.getElementById('editPassword').focus();
+        }
+        
+        // 隐藏编辑弹窗
+        function hideEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+        
+        // 保存编辑
+        async function saveEdit() {
+            const oldUsername = currentEditUsername;
+            let newUsername = document.getElementById('editUsername').value.trim();
+            const newPassword = document.getElementById('editPassword').value;
+            const confirmPassword = document.getElementById('editConfirmPassword').value;
+            const errorMessage = document.getElementById('editErrorMessage');
+            
+            // 普通用户不能修改用户名
+            if (currentUserRole !== 'admin') {
+                newUsername = oldUsername;
+            }
+            
+            if (!newPassword) {
+                errorMessage.textContent = '请输入新密码';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            if (!confirmPassword) {
+                errorMessage.textContent = '请确认新密码';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                errorMessage.textContent = '两次输入的密码不一致';
+                errorMessage.style.display = 'block';
+                return;
+            }
+            
+            // 构建请求数据
+            const requestData = { oldUsername, newUsername, newPassword };
+            
+            // 确保请求数据中包含 newRole 字段
+            const newRole = document.getElementById('editRole').value;
+            requestData.newRole = newRole;
+            
+            try {
+                const response = await fetch('/update_account', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideEditModal();
+                    await loadAccounts();
+                } else {
+                    errorMessage.textContent = data.message;
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('更新账户错误:', error);
+                errorMessage.textContent = '更新失败，请重试';
+                errorMessage.style.display = 'block';
+            }
+        }
+        
+        // 显示删除确认弹窗
+        function showDeleteModal(username) {
+            currentDeleteUsername = username;
+            document.getElementById('deleteModalMessage').textContent = '确定要删除账户 "' + username + '" 吗？此操作不可恢复。';
+            document.getElementById('deleteModal').classList.add('show');
+        }
+        
+        // 隐藏删除确认弹窗
+        function hideDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            currentDeleteUsername = '';
+        }
+        
+        // 确认删除
+        async function confirmDelete() {
+            if (!currentDeleteUsername) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/delete_account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username: currentDeleteUsername })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideDeleteModal();
+                    await loadAccounts();
+                } else {
+                    hideDeleteModal();
+                    alert(data.message);
+                }
+            } catch (error) {
+                console.error('删除账户错误:', error);
+                hideDeleteModal();
+                alert('删除失败，请重试');
+            }
+        }
+        
+        // 删除账户（点击删除按钮时调用）
+        function deleteAccount(username) {
+            showDeleteModal(username);
+        }
+        
+        // 点击弹窗外部关闭
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideEditModal();
+            }
+        });
+        
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDeleteModal();
+            }
+        });
+        
+        // 按回车键添加账户
+        document.getElementById('newPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addAccount();
+            }
+        });
+
+        // 页面加载完成后执行
+        window.addEventListener('DOMContentLoaded', function() {
+            getCurrentUserRole();
+            loadAccounts();
+        });
+        
+        // 按回车键保存编辑
+        document.getElementById('editPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveEdit();
+            }
+        });
+        
+
+    </script>
+</body>
+</html>

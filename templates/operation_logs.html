@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>操作日志 - 高校信息查询系统</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 50px;
+            width: 100%;
+            max-width: 1300px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .card:hover {
+            /* 移除浮动效果 */
+        }
+        
+        h1 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            /* 移除相对定位和底部内边距，不再需要动态线 */
+        }
+        
+        /* 移除动态线 */
+        /* h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: translateX(-50%) scaleX(1);
+            }
+            50% {
+                transform: translateX(-50%) scaleX(1.1);
+            }
+            100% {
+                transform: translateX(-50%) scaleX(1);
+            }
+        } */
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-back {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background-color: #7f8c8d;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+        }
+        
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        /* 滚动数据区域 */
+        .scrolling-container {
+            height: 450px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        /* 表格样式 */
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #f8f9fa;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        .log-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .log-table th, .log-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .log-table th {
+            text-align: center;
+        }
+        
+        .log-table th:nth-child(6),
+        .log-table td:nth-child(6) {
+            min-width: 400px;
+            word-break: break-word;
+        }
+        
+        .arrow {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0 8px;
+        }
+        
+        .log-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .log-table thead tr {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .log-table tr {
+            transition: all 0.3s ease;
+        }
+        
+        .log-table tr:hover {
+            background-color: #f0f1f2;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .log-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* 复选框样式 */
+        .log-table input[type="checkbox"] {
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+        
+        /* 表格加载动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .log-table tbody tr {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .log-table tbody tr:nth-child(even) {
+            background-color: #f5f7fa;
+        }
+        
+        /* 操作类型标签 */
+        .operation-type {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .operation-type::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .operation-type:hover::before {
+            left: 100%;
+        }
+        
+        .operation-type.create {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+        }
+        
+        .operation-type.create:hover {
+            background-color: #c8e6c9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+        }
+        
+        .operation-type.update {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            box-shadow: 0 2px 4px rgba(21, 101, 192, 0.2);
+        }
+        
+        .operation-type.update:hover {
+            background-color: #bbdefb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(21, 101, 192, 0.3);
+        }
+        
+        .operation-type.delete {
+            background-color: #ffebee;
+            color: #c62828;
+            box-shadow: 0 2px 4px rgba(198, 40, 40, 0.2);
+        }
+        
+        .operation-type.delete:hover {
+            background-color: #ffcdd2;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(198, 40, 40, 0.3);
+        }
+        
+        .operation-type.read {
+            background-color: #fff3e0;
+            color: #e65100;
+            box-shadow: 0 2px 4px rgba(230, 81, 0, 0.2);
+        }
+        
+        .operation-type.read:hover {
+            background-color: #ffcc80;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(230, 81, 0, 0.3);
+        }
+        
+        /* 响应式设计 - 平板 */
+        @media (max-width: 1024px) {
+            .card {
+                padding: 30px 35px;
+            }
+            
+            .log-table th,
+            .log-table td {
+                padding: 12px;
+                font-size: 13px;
+            }
+        }
+        
+        /* 响应式设计 - 手机 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin-bottom: 25px;
+            }
+            
+            .section-title {
+                font-size: 16px;
+            }
+            
+            /* 表格响应式处理 */
+            .log-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .log-table thead {
+                display: none;
+            }
+            
+            .log-table tbody {
+                display: block;
+            }
+            
+            .log-table tr {
+                display: block;
+                margin-bottom: 20px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+                padding: 15px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+            
+            .log-table td {
+                display: block;
+                text-align: right;
+                padding: 8px 0;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .log-table td:last-child {
+                border-bottom: none;
+            }
+            
+            .log-table td:before {
+                content: attr(data-label);
+                float: left;
+                font-weight: 600;
+                color: #666;
+            }
+        }
+        
+        /* 响应式设计 - 小屏手机 */
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+        }
+        
+        /* 弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .login-modal {
+            background-color: white;
+            padding: 35px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .delete-message {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>操作日志</h1>
+        
+        <div class="scrolling-container">
+            <table class="log-table" id="logTable">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                        <th>ID</th>
+                        <th>操作类型</th>
+                        <th>记录ID</th>
+                        <th>操作时间</th>
+                        <th>详细内容</th>
+                    </tr>
+                </thead>
+                <tbody id="logTableBody">
+                    <!-- 操作日志将通过JavaScript动态加载 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="actions">
+            <a href="/account" class="btn btn-back">返回管理后台</a>
+            <a href="/" class="btn btn-back">返回首页</a>
+            <button class="btn btn-delete" onclick="deleteSelectedLogs()">删除日志</button>
+        </div>
+    </div>
+    
+    <script>
+        // 获取当前用户角色
+        async function getCurrentUserRole() {
+            try {
+                const response = await fetch('/check_login');
+                const data = await response.json();
+                if (data.logged_in) {
+                    return data.role || '';
+                }
+            } catch (error) {
+                console.error('获取用户角色错误:', error);
+            }
+            return '';
+        }
+        
+        // 根据用户角色更新UI
+        async function updateUIBasedOnRole() {
+            const role = await getCurrentUserRole();
+            // 普通用户隐藏删除日志按钮和全选复选框
+            if (role !== 'admin') {
+                // 隐藏删除日志按钮
+                const deleteButton = document.querySelector('.btn-delete');
+                if (deleteButton) {
+                    deleteButton.style.display = 'none';
+                }
+                // 隐藏全选复选框
+                const selectAllCheckbox = document.getElementById('selectAll');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.style.display = 'none';
+                }
+            }
+        }
+        
+        // 页面加载时获取操作日志
+        async function loadOperationLogs() {
+            try {
+                const response = await fetch('/get_operation_logs');
+                const data = await response.json();
+                console.log('操作日志数据:', data); // 添加日志
+                if (data.success) {
+                    // 过滤掉查询操作
+                    const logs = data.logs || [];
+                    const filteredLogs = logs.filter(log => log.operation_type !== 'read');
+                    console.log('过滤后的日志:', filteredLogs); // 添加日志
+                    renderOperationLogs(filteredLogs);
+                    // 更新UI基于用户角色
+                    await updateUIBasedOnRole();
+                } else {
+                    console.error('获取操作日志失败:', data.message); // 添加日志
+                    document.getElementById('logTableBody').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 30px; color: #666;">加载失败，请重试</td></tr>';
+                }
+            } catch (error) {
+                console.error('加载操作日志错误:', error);
+                document.getElementById('logTableBody').innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 30px; color: #666;">加载失败，请重试</td></tr>';
+            }
+        }
+        
+        // 渲染操作日志
+        async function renderOperationLogs(logs) {
+            const logTableBody = document.getElementById('logTableBody');
+            
+            if (logs.length === 0) {
+                logTableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 30px; color: #666;">日志为空</td></tr>';
+                return;
+            }
+            
+            // 获取当前用户角色
+            const role = await getCurrentUserRole();
+            
+            logTableBody.innerHTML = logs.map(log => {
+                let operationTypeClass = '';
+                let operationTypeText = '';
+                
+                switch (log.operation_type) {
+                    case 'create':
+                        operationTypeClass = 'create';
+                        operationTypeText = '创建';
+                        break;
+                    case 'update':
+                        operationTypeClass = 'update';
+                        operationTypeText = '更新';
+                        break;
+                    case 'delete':
+                        operationTypeClass = 'delete';
+                        operationTypeText = '删除';
+                        break;
+                    default:
+                        operationTypeClass = '';
+                        operationTypeText = log.operation_type;
+                }
+                
+                // 解析详细操作内容
+                let detailedContent = '';
+                console.log('处理日志:', log); // 添加日志
+                console.log('log.old_data:', log.old_data); // 添加日志
+                console.log('log.new_data:', log.new_data); // 添加日志
+                switch (log.operation_type) {
+                    case 'create':
+                        if (log.new_data) {
+                            try {
+                                const newData = JSON.parse(log.new_data);
+                                console.log('创建数据:', newData); // 添加日志
+                                if (log.table_name === 'universities') {
+                                    const schoolName = newData['学校名称'] || newData.name || '未知';
+                                    const city = newData['地址'] || newData.city || '未知';
+                                    const category = newData['类别'] || newData.category || '未知';
+                                    const nature = newData['性质'] || newData.nature || '未知';
+                                    detailedContent = `创建了学校：${schoolName}（城市：${city}，类别：${category}，性质：${nature}）`;
+                                } else if (log.table_name === 'users') {
+                                    const username = newData.Username || newData.username || '未知';
+                                    const role = newData.Role || newData.role || '未知';
+                                    detailedContent = `创建了用户：${username}（角色：${role}）`;
+                                } else {
+                                    // 显示通用创建信息
+                                    const fields = [];
+                                    Object.keys(newData).forEach(key => {
+                                        if (key !== 'Password' && key !== 'password') { // 不显示密码
+                                            fields.push(`${key}：${newData[key]}`);
+                                        }
+                                    });
+                                    if (fields.length > 0) {
+                                        detailedContent = `创建了新记录：<br>${fields.join('<br>')}`;
+                                    } else {
+                                        detailedContent = '创建了新记录';
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('解析创建数据错误:', e); // 添加日志
+                                detailedContent = '创建了新记录';
+                            }
+                        } else {
+                            detailedContent = '创建了新记录';
+                        }
+                        break;
+                    case 'update':
+                        if (log.old_data && log.new_data) {
+                            try {
+                                const oldData = JSON.parse(log.old_data);
+                                const newData = JSON.parse(log.new_data);
+                                console.log('更新数据 - 旧:', oldData); // 添加日志
+                                console.log('更新数据 - 新:', newData); // 添加日志
+                                if (log.table_name === 'universities') {
+                                    const changes = [];
+                                    // 对比所有可能的字段
+                                    const fields = [
+                                        { key: '学校名称', label: '学校名称', altKey: 'name' },
+                                        { key: '地址', label: '城市', altKey: 'city' },
+                                        { key: '类别', label: '类别', altKey: 'category' },
+                                        { key: '性质', label: '性质', altKey: 'nature' },
+                                        { key: '归属部门', label: '归属部门', altKey: 'belonging' },
+                                        { key: '建校时间', label: '建校时间', altKey: 'founded_year' },
+                                        { key: '占地面积', label: '占地面积', altKey: 'campus_area' },
+                                        { key: '标签', label: '标签', altKey: 'tags' },
+                                        { key: '基本信息', label: '简介', altKey: 'basic_info' }
+                                    ];
+                                    
+                                    fields.forEach(field => {
+                                        const oldValue = oldData[field.key] || oldData[field.altKey] || '未知';
+                                        const newValue = newData[field.key] || newData[field.altKey] || '未知';
+                                        if (oldValue !== newValue) {
+                                        changes.push(`${field.label}：${oldValue} <span class="arrow">→</span> ${newValue}`);
+                                    }
+                                    });
+                                    
+                                    if (changes.length > 0) {
+                                        detailedContent = `修改了学校信息：<br>${changes.join('<br>')}`;
+                                    } else {
+                                        detailedContent = '更新了学校信息';
+                                    }
+                                } else if (log.table_name === 'users') {
+                                    const changes = [];
+                                    const seenFields = new Set();
+                                    // 对比用户字段
+                                    const fields = [
+                                        { key: 'Username', label: '用户名', altKey: 'username' },
+                                        { key: 'Role', label: '角色', altKey: 'role' }
+                                    ];
+                                    
+                                    fields.forEach(field => {
+                                        const oldValue = oldData[field.key] || oldData[field.altKey] || '未知';
+                                        const newValue = newData[field.key] || newData[field.altKey] || '未知';
+                                        if (oldValue !== newValue && !seenFields.has(field.label)) {
+                                            changes.push(`${field.label}：${oldValue} <span class="arrow">→</span> ${newValue}`);
+                                            seenFields.add(field.label);
+                                        }
+                                    });
+                                    
+                                    if (changes.length > 0) {
+                                        detailedContent = `修改了用户信息：<br>${changes.join('<br>')}`;
+                                    } else {
+                                        detailedContent = '更新了用户信息';
+                                    }
+                                } else {
+                                    // 通用字段对比
+                                    const changes = [];
+                                    const allKeys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
+                                    allKeys.forEach(key => {
+                                        const oldValue = oldData[key] || '未知';
+                                        const newValue = newData[key] || '未知';
+                                        if (oldValue !== newValue) {
+                                            changes.push(`${key}：${oldValue} <span class="arrow">→</span> ${newValue}`);
+                                        }
+                                    });
+                                    
+                                    if (changes.length > 0) {
+                                        detailedContent = `修改了记录信息：<br>${changes.join('<br>')}`;
+                                    } else {
+                                        detailedContent = '更新了记录信息';
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('解析更新数据错误:', e); // 添加日志
+                                detailedContent = '更新了记录信息';
+                            }
+                        } else {
+                            detailedContent = '更新了记录信息';
+                        }
+                        break;
+                    case 'delete':
+                        if (log.old_data) {
+                            try {
+                                const oldData = JSON.parse(log.old_data);
+                                console.log('删除数据:', oldData); // 添加日志
+                                if (log.table_name === 'universities') {
+                                    const schoolName = oldData['学校名称'] || oldData.name || '未知';
+                                    const city = oldData['地址'] || oldData.city || '未知';
+                                    const category = oldData['类别'] || oldData.category || '未知';
+                                    detailedContent = `删除了学校：${schoolName}（城市：${city}，类别：${category}）`;
+                                } else if (log.table_name === 'users') {
+                                    const username = oldData.Username || oldData.username || '未知';
+                                    const role = oldData.Role || oldData.role || '未知';
+                                    detailedContent = `删除了用户：${username}（角色：${role}）`;
+                                } else {
+                                    // 显示通用删除信息
+                                    const fields = [];
+                                    Object.keys(oldData).forEach(key => {
+                                        if (key !== 'Password' && key !== 'password') { // 不显示密码
+                                            fields.push(`${key}：${oldData[key]}`);
+                                        }
+                                    });
+                                    if (fields.length > 0) {
+                                        detailedContent = `删除了记录：<br>${fields.join('<br>')}`;
+                                    } else {
+                                        detailedContent = '删除了记录';
+                                    }
+                                }
+                            } catch (e) {
+                                console.error('解析删除数据错误:', e); // 添加日志
+                                detailedContent = '删除了记录';
+                            }
+                        } else {
+                            detailedContent = '删除了记录';
+                        }
+                        break;
+                    default:
+                        detailedContent = '执行了操作';
+                }
+                
+                // 只有管理员显示复选框
+                const checkboxHTML = role === 'admin' ? 
+                    `<input type="checkbox" class="log-checkbox" value="${log.id}">` : 
+                    '';
+                
+                console.log('详细内容:', detailedContent); // 添加日志
+                return `<tr>
+                    <td data-label="选择">${checkboxHTML}</td>
+                    <td data-label="ID">${log.id}</td>
+                    <td data-label="操作类型"><span class="operation-type ${operationTypeClass}">${operationTypeText}</span></td>
+                    <td data-label="记录ID">${log.record_id}</td>
+                    <td data-label="操作时间">${log.operation_time}</td>
+                    <td data-label="详细内容">${detailedContent || '无详细信息'}</td>
+                </tr>`;
+            }).join('');
+        }
+        
+        // 全选/取消全选
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.log-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        }
+        
+        // 显示删除确认弹窗
+        function showDeleteConfirmModal(logIds) {
+            // 创建删除确认弹窗元素
+            const deleteConfirmModal = document.createElement('div');
+            deleteConfirmModal.id = 'deleteConfirmModal';
+            deleteConfirmModal.className = 'modal-overlay show';
+            deleteConfirmModal.innerHTML = `
+                <div class="login-modal" style="max-width: 400px;">
+                    <div class="modal-title">删除确认</div>
+                    <div class="delete-message">确定要删除选中的 ${logIds.length} 条日志吗？此操作不可恢复。</div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-secondary" onclick="hideDeleteConfirmModal()">取消</button>
+                        <button class="modal-btn modal-btn-primary" onclick="confirmDeleteLogs([${logIds.join(',')}])">确定</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(deleteConfirmModal);
+            
+            // 点击弹窗外部关闭
+            deleteConfirmModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideDeleteConfirmModal();
+                }
+            });
+        }
+        
+        // 隐藏删除确认弹窗
+        function hideDeleteConfirmModal() {
+            const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+            if (deleteConfirmModal) {
+                deleteConfirmModal.remove();
+            }
+        }
+        
+        // 确认删除日志
+        async function confirmDeleteLogs(logIds) {
+            try {
+                console.log('开始删除日志，ID列表:', logIds);
+                const response = await fetch('/delete_operation_logs', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ log_ids: logIds })
+                });
+                
+                console.log('删除请求响应状态:', response.status);
+                const data = await response.json();
+                console.log('删除请求返回数据:', data);
+                
+                if (data.success) {
+                    hideDeleteConfirmModal();
+                    showSuccessModal('删除成功');
+                    // 延迟一点再加载，确保服务器端已处理
+                    setTimeout(() => {
+                        loadOperationLogs(); // 重新加载日志
+                    }, 300);
+                } else {
+                    hideDeleteConfirmModal();
+                    showSuccessModal('删除失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('删除日志错误:', error);
+                hideDeleteConfirmModal();
+                showSuccessModal('删除失败，请重试');
+            }
+        }
+        
+        // 删除选中的日志
+        async function deleteSelectedLogs() {
+            const checkboxes = document.querySelectorAll('.log-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showSuccessModal('请先选择要删除的日志');
+                return;
+            }
+            
+            const logIds = Array.from(checkboxes).map(checkbox => parseInt(checkbox.value)); // 转换为整数
+            
+            // 显示删除确认弹窗
+            showDeleteConfirmModal(logIds);
+        }
+        
+        // 显示成功弹窗
+        function showSuccessModal(message) {
+            // 创建成功弹窗元素
+            const successModal = document.createElement('div');
+            successModal.id = 'successModal';
+            successModal.className = 'modal-overlay show';
+            successModal.innerHTML = `
+                <div class="login-modal" style="max-width: 400px;">
+                    <div class="modal-title">操作成功</div>
+                    <div class="delete-message">${message}</div>
+                    <div class="modal-actions">
+                        <button class="modal-btn modal-btn-primary" onclick="hideSuccessModal()">确定</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(successModal);
+            
+            // 点击弹窗外部关闭
+            successModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    hideSuccessModal();
+                }
+            });
+        }
+        
+        // 隐藏成功弹窗
+        function hideSuccessModal() {
+            const successModal = document.getElementById('successModal');
+            if (successModal) {
+                successModal.remove();
+            }
+        }
+        
+        // 页面加载完成后执行
+        window.addEventListener('DOMContentLoaded', function() {
+            loadOperationLogs();
+        });
+    </script>
+</body>
+</html>

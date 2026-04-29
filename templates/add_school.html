@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加院校 - 高校信息查询系统</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 50px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            font-size: 28px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 30px;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-upload {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background-color: #fafafa;
+            flex-shrink: 0;
+        }
+        
+        .logo-upload:hover {
+            border-color: #667eea;
+            background-color: #f5f5f5;
+        }
+        
+        .logo-upload input[type="file"] {
+            display: none;
+        }
+        
+        .logo-upload-label {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 1;
+        }
+        
+        .logo-upload-label i {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .upload-info {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .logo-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #fafafa;
+        }
+        
+        .logo-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .no-logo {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .logo-upload-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .logo-upload-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .logo-requirements {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        .info {
+            flex: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        /* 标签页样式 */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 25px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 15px;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            margin-bottom: -1px;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .btn-back {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-back:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 15px;
+            font-size: 18px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+        
+        .toast.show {
+            display: block;
+        }
+        
+        .toast-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .max-id-info {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+        
+        /* 错误提示弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .login-modal {
+            background-color: white;
+            padding: 35px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            opacity: 0.9;
+        }
+        
+        .modal-btn-secondary {
+            background-color: #f0f0f0;
+            color: #666;
+        }
+        
+        .modal-btn-secondary:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* 登录信息样式 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+        
+        .username {
+            color: #667eea;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .username:hover {
+            color: #764ba2;
+        }
+        
+        /* 响应式设计 - 平板 */
+        @media (max-width: 1024px) {
+            .card {
+                padding: 30px 35px;
+            }
+            
+            .form-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* 响应式设计 - 手机 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .card {
+                padding: 25px 20px;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin-bottom: 25px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .logo-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .info {
+                width: 100%;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            .tab {
+                padding: 10px 16px;
+                font-size: 14px;
+                flex: 1;
+                text-align: center;
+                min-width: calc(50% - 5px);
+            }
+            
+            .actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn-back, .btn-save {
+                width: 100%;
+                padding: 12px;
+            }
+            
+            .modal-overlay .edit-modal,
+            .modal-overlay .delete-modal {
+                padding: 30px 25px;
+                margin: 20px;
+            }
+            
+            .modal-title, .delete-modal-title {
+                font-size: 18px;
+            }
+            
+            .modal-actions, .delete-modal-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .modal-btn, .delete-btn {
+                width: 100%;
+            }
+        }
+        
+        /* 响应式设计 - 小屏手机 */
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            .logo-upload {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .logo-upload-btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .tab {
+                min-width: 100%;
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .form-group input,
+            .form-group textarea {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="user-info" id="loginContainer"></div>
+        
+        <h1>添加院校</h1>
+        
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo-upload" id="logoUpload">
+                    <input type="file" id="logoFile" accept="image/*" onchange="handleLogoUpload()">
+                    <div class="logo-preview" id="logoPreview">
+                        <span class="no-logo">无Logo</span>
+                    </div>
+                </div>
+                <div>
+                    <button class="logo-upload-btn" onclick="document.getElementById('logoFile').click()">上传Logo</button>
+                    <div class="upload-info">800×800px以内<br>500KB以下</div>
+                </div>
+            </div>
+            <div class="info">
+                <div class="form-group">
+                    <label>学校名称</label>
+                    <input type="text" name="学校名称" id="schoolName" placeholder="请输入学校名称">
+                    <div class="max-id-info">可用学校ID: <span id="availableId">{{ .available_id }}</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('basic')">基本信息</div>
+            <div class="tab" onclick="switchTab('stats')">统计数据</div>
+            <div class="tab" onclick="switchTab('rank')">排名信息</div>
+            <div class="tab" onclick="switchTab('tags')">标签和简介</div>
+        </div>
+        
+        <form id="addForm">
+            <input type="hidden" name="学校ID" id="schoolId" value="">
+            <input type="hidden" name="logo_path" id="logoPath" value="">
+            
+            <!-- 基本信息 -->
+            <div class="tab-content active" id="tab-basic">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>地址</label>
+                        <input type="text" name="地址" placeholder="请输入地址">
+                    </div>
+                    <div class="form-group">
+                        <label>类别</label>
+                        <input type="text" name="类别" placeholder="请输入类别">
+                    </div>
+                    <div class="form-group">
+                        <label>性质</label>
+                        <input type="text" name="性质" placeholder="请输入性质">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>归属部门</label>
+                        <input type="text" name="归属部门" placeholder="请输入归属部门">
+                    </div>
+                    <div class="form-group">
+                        <label>建校时间</label>
+                        <input type="text" name="建校时间" placeholder="请输入建校时间">
+                    </div>
+                    <div class="form-group">
+                        <label>占地面积（单位：亩）</label>
+                        <input type="text" name="占地面积" placeholder="请输入占地面积">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="tab-content" id="tab-stats">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>保研星级</label>
+                        <input type="text" name="保研星级" placeholder="请输入保研星级">
+                    </div>
+                    <div class="form-group">
+                        <label>博士点数量</label>
+                        <input type="text" name="博士点数量" placeholder="请输入博士点数量">
+                    </div>
+                    <div class="form-group">
+                        <label>硕士点数量</label>
+                        <input type="text" name="硕士点数量" placeholder="请输入硕士点数量">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>国家重点学科数量</label>
+                        <input type="text" name="国家重点学科数量" placeholder="请输入国家重点学科数量">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 排名信息 -->
+            <div class="tab-content" id="tab-rank">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>软科综合排名</label>
+                        <input type="text" name="软科综合排名" placeholder="请输入软科综合排名">
+                    </div>
+                    <div class="form-group">
+                        <label>校友会综合排名</label>
+                        <input type="text" name="校友会综合排名" placeholder="请输入校友会综合排名">
+                    </div>
+                    <div class="form-group">
+                        <label>QS世界排名</label>
+                        <input type="text" name="QS世界排名" placeholder="请输入QS世界排名">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>US世界排名</label>
+                        <input type="text" name="US世界排名" placeholder="请输入US世界排名">
+                    </div>
+                    <div class="form-group">
+                        <label>泰晤士排名</label>
+                        <input type="text" name="泰晤士排名" placeholder="请输入泰晤士排名">
+                    </div>
+                    <div class="form-group">
+                        <label>人气值排名</label>
+                        <input type="text" name="人气值排名" placeholder="请输入人气值排名">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 标签和简介 -->
+            <div class="tab-content" id="tab-tags">
+                <div class="form-group">
+                    <label>标签（用逗号分隔）</label>
+                    <input type="text" name="标签" placeholder="请输入标签，用逗号分隔">
+                </div>
+                <div class="form-group">
+                    <label>学校简介</label>
+                    <textarea name="基本信息" rows="6" placeholder="请输入学校简介"></textarea>
+                </div>
+            </div>
+        </form>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-back">取消</a>
+            <button type="button" class="btn btn-save" onclick="addSchool()">保存</button>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">
+        <div class="toast-icon">✓</div>
+        <div>已提交</div>
+    </div>
+    
+    <!-- 错误提示弹窗 -->
+    <div class="modal-overlay" id="errorModal">
+        <div class="login-modal">
+            <div class="modal-title">提示</div>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-primary" onclick="hideErrorModal()">确定</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let logoFile = null;
+        let isLoggedIn = false;
+        let currentUsername = '';
+        
+        // 页面加载时检查登录状态
+        async function checkLoginStatus() {
+            try {
+                const response = await fetch('/check_login');
+                const data = await response.json();
+                if (data.logged_in) {
+                    isLoggedIn = true;
+                    currentUsername = data.username;
+                    updateLoginUI();
+                }
+            } catch (error) {
+                console.error('检查登录状态错误:', error);
+            }
+        }
+        
+        // 更新登录按钮UI
+        function updateLoginUI() {
+            const loginContainer = document.getElementById('loginContainer');
+            if (isLoggedIn) {
+                loginContainer.innerHTML = `
+                    <span class="username" onclick="window.location.href='/account'" style="cursor: pointer;">${currentUsername}</span>
+                `;
+            } else {
+                loginContainer.innerHTML = '';
+            }
+        }
+        
+        // 切换标签页
+        function switchTab(tabName) {
+            // 移除所有active类
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 添加active类到当前标签
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+        
+        // 显示错误弹窗
+        function showErrorModal(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorModal').classList.add('show');
+        }
+        
+        // 隐藏错误弹窗
+        function hideErrorModal() {
+            document.getElementById('errorModal').classList.remove('show');
+        }
+        
+        // 验证数字输入
+        function validateNumber(input) {
+            const value = input.value;
+            // 允许空值
+            if (value === '') {
+                input.style.borderColor = '#e0e0e0';
+                return;
+            }
+            // 验证是否为数字（包括整数、小数、正负号）
+            if (!/^[+-]?\d*\.?\d*$/.test(value)) {
+                // 如果不是数字，移除最后一个字符
+                input.value = value.slice(0, -1);
+                showErrorModal('该字段只能输入数字、+、-符号');
+            } else {
+                input.style.borderColor = '#e0e0e0';
+            }
+        }
+        
+        // 处理logo上传
+        function handleLogoUpload() {
+            const fileInput = document.getElementById('logoFile');
+            const file = fileInput.files[0];
+            
+            if (file) {
+                // 检查文件大小
+                if (file.size > 500 * 1024) {
+                    showErrorModal('文件大小不能超过500KB');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                // 检查文件类型
+                if (!file.type.startsWith('image/')) {
+                    showErrorModal('请上传图片文件');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                // 预览图片
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const logoPreview = document.getElementById('logoPreview');
+                    logoPreview.innerHTML = `<img src="${e.target.result}" alt="Logo">`;
+                };
+                reader.readAsDataURL(file);
+                
+                logoFile = file;
+            }
+        }
+        
+        // 添加院校
+        async function addSchool() {
+            const schoolName = document.getElementById('schoolName').value.trim();
+            const availableId = document.getElementById('availableId').textContent.trim();
+            
+            if (!schoolName) {
+                showErrorModal('请输入学校名称');
+                return;
+            }
+            
+            if (!logoFile) {
+                showErrorModal('请上传Logo');
+                return;
+            }
+            
+            // 上传logo
+            const formData = new FormData();
+            formData.append('logo', logoFile);
+            formData.append('available_id', availableId);
+            
+            try {
+                // 上传logo
+                const uploadResponse = await fetch('/upload_logo', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const uploadData = await uploadResponse.json();
+                
+                if (!uploadData.success) {
+                    showErrorModal('Logo上传失败: ' + uploadData.message);
+                    return;
+                }
+                
+                // 准备表单数据
+                const form = document.getElementById('addForm');
+                const formDataObj = new FormData(form);
+                const data = {};
+                
+                // 确保所有必要字段都被包含
+                const requiredFields = [
+                    '学校ID', '学校名称', '地址', '类别', '性质', '归属部门', '标签', 
+                    '建校时间', '占地面积', '保研星级', '博士点数量', '硕士点数量', 
+                    '国家重点学科数量', '软科综合排名', '校友会综合排名', 'QS世界排名', 
+                    'US世界排名', '泰晤士排名', '人气值排名', '基本信息', '办学形式', 'logo_path'
+                ];
+                
+                // 初始化所有字段为空字符串
+                requiredFields.forEach(field => {
+                    data[field] = '';
+                });
+                
+                // 填充表单数据
+                formDataObj.forEach((value, key) => {
+                    data[key] = value;
+                });
+                
+                data['学校名称'] = schoolName;
+                data['学校ID'] = uploadData.logo_id;
+                data['logo_path'] = uploadData.file_path;
+                
+                // 提交表单
+                const response = await fetch('/add_school', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast();
+                    setTimeout(() => {
+                        window.location.href = `/university/${uploadData.logo_id}`;
+                    }, 1500);
+                } else {
+                    showErrorModal('添加失败: ' + result.message);
+                }
+            } catch (error) {
+                console.error('添加院校错误:', error);
+                showErrorModal('添加失败');
+            }
+        }
+        
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 1500);
+        }
+        
+        // 点击弹窗外部关闭
+        document.getElementById('errorModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideErrorModal();
+            }
+        });
+        
+        // 页面加载时检查登录状态
+        checkLoginStatus();
+    </script>
+</body>
+</html>
